@@ -63,6 +63,34 @@ Preview production build:
 npm run preview
 ```
 
+## Production Setup (Ubuntu 22.04+)
+
+An automated script (`deploy/setup-production.sh`) provisions a fresh server with the API, MySQL, and nginx reverse proxy:
+
+1. Prepare a config file:
+   ```bash
+   cp deploy/production.env.example deploy/production.env
+   # Edit deploy/production.env with your domain, DB creds, JWT secret, etc.
+   ```
+2. Copy the repo to your server (example):
+   ```bash
+   rsync -avz --delete . user@server:/opt/groomy-paws
+   ```
+3. SSH in and run the setup as root/sudo:
+   ```bash
+   ssh user@server
+   cd /opt/groomy-paws
+   sudo ENV_FILE=/opt/groomy-paws/deploy/production.env bash deploy/setup-production.sh
+   ```
+
+The script installs Node.js, nginx (and optionally MySQL + certbot), installs project deps, builds the Vite frontend, seeds the MySQL schema, writes production env files, creates a systemd unit (`groomy-paws-api` by default), and configures nginx to serve the SPA while proxying `/api` and `/uploads` to the Express server.
+
+After it finishes:
+- `sudo systemctl status groomy-paws-api` (API health)
+- `journalctl -u groomy-paws-api -f` (API logs)
+- `sudo nginx -t && sudo systemctl reload nginx`
+- `sudo -u groomy node server/create-admin.js` to bootstrap an admin account
+
 ## Creating Test Accounts
 
 Since the application uses Supabase authentication, you need to create accounts through the UI:
