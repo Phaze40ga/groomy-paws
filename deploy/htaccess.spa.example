@@ -1,0 +1,22 @@
+# SPA routing for Groomy Paws built frontend
+# Copy to your web root (e.g., public_html/groomy-paws/dist/.htaccess)
+
+RewriteEngine On
+
+# Serve existing files/folders
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Exclude API routes (handled by Node app mounted at /api)
+RewriteCond %{REQUEST_URI} !^/api/ [NC]
+
+# Fallback other routes to index.html
+RewriteRule ^ index.html [L]
+
+<IfModule mod_headers.c>
+  # Optional: cache static assets
+  <FilesMatch "\.(js|css|png|jpg|jpeg|gif|svg|woff2?)$">
+    Header set Cache-Control "max-age=31536000, public"
+  </FilesMatch>
+</IfModule>
